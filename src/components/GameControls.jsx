@@ -18,8 +18,8 @@ export default function GameControls({ betAmount, onBet, onRoll, profit }) {
           className="bg-transparent flex-1 text-white outline-none"
         />
         <span className="text-yellow-400 text-lg">🪙</span>
-        <button onClick={() => setInput(input / 2)} className="ml-2 bg-slate-600 px-2 py-1 rounded text-white">½</button>
-        <button onClick={() => setInput(input * 2)} className="ml-1 bg-slate-600 px-2 py-1 rounded text-white">2×</button>
+        <button onClick={() => setInput(input / 2)} className="ml-2 bg-slate-600 pr-2 px-1 py-1 rounded text-white cursor-pointer">½</button>
+        <button onClick={() => setInput(input * 2)} className="ml-1 bg-slate-600 mr-4 px-1 py-1 rounded text-white cursor-pointer">2×</button>
       </div>
 
       {/* Cashout Button */}
