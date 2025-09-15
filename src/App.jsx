@@ -1,72 +1,69 @@
-// App.jsx
+// src/App.jsx
 import React, { useState } from "react";
 import Navbar from "./components/Navbar";
-import GameBoard from "./components/GameBoard";
 import GameControls from "./components/GameControls";
+import GameBoard from "./components/GameBoard";
 import { boardTiles, rollDice, movePlayer, calculateWinnings } from "./gameLogic";
 
 export default function App() {
-  const [balance, setBalance] = useState(100);
-  const [betAmount, setBetAmount] = useState(0);
-  const [dice, setDice] = useState([1, 1]);
-  const [playerPos, setPlayerPos] = useState(0);
+  // Global states
+  const [walletBalance, setWalletBalance] = useState(1.0); // default 1 BTC for demo
+  const [betAmount, setBetAmount] = useState(0.01);
   const [profit, setProfit] = useState(0);
-  const [landedTile, setLandedTile] = useState("1.00x");
+  const [playerPos, setPlayerPos] = useState(0);
+  const [dice, setDice] = useState([null, null]);
+  const [landedTile, setLandedTile] = useState("▶");
   const [popup, setPopup] = useState(null);
 
-  const handleBet = (amount) => {
-    setBetAmount(amount);
-  };
+  // Roll dice and move player
+  const handleRollDice = () => {
+    const { die1, die2, total } = rollDice();
+    setDice([die1, die2]);
 
-  const handleRoll = () => {
-    if (betAmount <= 0 || betAmount > balance) return;
+    const newPos = movePlayer(playerPos, total);
+    setPlayerPos(newPos);
 
-    // Animate dice for 1 second
-    let ticks = 0;
-    const interval = setInterval(() => {
-      setDice([Math.floor(Math.random() * 6) + 1, Math.floor(Math.random() * 6) + 1]);
-      ticks++;
-      if (ticks > 10) {
-        clearInterval(interval);
+    const tile = boardTiles[newPos];
+    setLandedTile(tile);
 
-        // Final roll
-        const { die1, die2, total } = rollDice();
-        setDice([die1, die2]);
+    // Calculate winnings
+    const winnings = calculateWinnings(tile, betAmount);
+    setProfit((prev) => prev + winnings);
+    setWalletBalance((prev) => prev + winnings);
 
-        // Move and update
-        const newPos = movePlayer(playerPos, total);
-        setPlayerPos(newPos);
-
-        const tile = boardTiles[newPos];
-        setLandedTile(tile);
-
-        const result = calculateWinnings(tile, betAmount);
-        setProfit(result);
-        setBalance((prev) => prev + result);
-
-        // Show popup
-        setPopup(result);
-        setTimeout(() => setPopup(null), 2000);
-      }
-    }, 80);
+    // Show popup
+    setPopup(winnings);
+    setTimeout(() => setPopup(null), 2000);
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col items-center">
-      <Navbar balance={balance} />
-      <GameBoard
-        tiles={boardTiles}
-        playerPos={playerPos}
-        dice={dice}
-        landedTile={landedTile}
-        popup={popup}
-      />
-      <GameControls
-        betAmount={betAmount}
-        onBet={handleBet}
-        onRoll={handleRoll}
-        profit={profit}
-      />
+    <div className="w-full h-screen bg-slate-900 flex flex-col">
+      {/* Navbar */}
+      <Navbar walletBalance={walletBalance} />
+
+      {/* Main content (GameControls left, GameBoard right) */}
+      <div className="flex flex-1 pt-20 px-6 gap-6">
+        {/* Left - Controls */}
+        <div className="w-1/3">
+          <GameControls
+            betAmount={betAmount}
+            setBetAmount={setBetAmount}
+            profit={profit}
+            onRollDice={handleRollDice}
+          />
+        </div>
+
+        {/* Right - Game board */}
+        <div className="flex-1 flex justify-center items-center">
+          <GameBoard
+            tiles={boardTiles}
+            playerPos={playerPos}
+            dice={dice}
+            landedTile={landedTile}
+            popup={popup}
+          />
+        </div>
+      </div>
     </div>
   );
 }
